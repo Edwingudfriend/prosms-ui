@@ -3,15 +3,13 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>ProSMS — ReimagineAfrica</title>
+  <title>ProSMS - ReimagineAfrica</title>
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-    body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: #EFF6FF; color: #1e3a8a; }
-    input, textarea { font-family: inherit; }
+    body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; background: #EFF6FF; color: #1e3a8a; }
+    input, textarea, select { font-family: inherit; }
     button { font-family: inherit; cursor: pointer; }
     textarea { resize: vertical; }
-    .grad { background: linear-gradient(to right, #1e3a8a, #2563eb); }
-    .grad-soft { background: linear-gradient(135deg, #1e40af 0%, #3b82f6 100%); }
   </style>
 </head>
 <body>
@@ -22,144 +20,183 @@
   <script type="text/babel" data-presets="react">
   const { useState, useEffect, useCallback } = React;
   const API_BASE = "https://api.prosms.reimagineafrica.co.tz";
-
   const C = {
-    grad: "linear-gradient(to right, #1e3a8a, #2563eb)",
-    gradSoft: "linear-gradient(135deg, #1e40af 0%, #3b82f6 100%)",
-    gradLight: "linear-gradient(135deg, #dbeafe 0%, #eff6ff 100%)",
-    primary: "#1e40af",
-    primaryMid: "#2563eb",
-    primaryLight: "#dbeafe",
-    primaryXLight: "#eff6ff",
-    success: "#16a34a", successLight: "#dcfce7",
-    warning: "#d97706", warningLight: "#fef3c7",
-    danger: "#dc2626", dangerLight: "#fee2e2",
-    purple: "#7c3aed", purpleLight: "#ede9fe",
-    gray100: "#f1f5f9", gray200: "#e2e8f0",
-    gray400: "#94a3b8", gray500: "#64748b",
-    gray600: "#475569", gray700: "#334155",
-    gray900: "#0f172a", white: "#ffffff",
+    grad:"linear-gradient(to right, #1e3a8a, #2563eb)",
+    primary:"#1e40af",primaryLight:"#dbeafe",primaryXLight:"#eff6ff",
+    success:"#16a34a",successLight:"#dcfce7",warning:"#d97706",warningLight:"#fef3c7",
+    danger:"#dc2626",dangerLight:"#fee2e2",purple:"#7c3aed",purpleLight:"#ede9fe",
+    gray100:"#f1f5f9",gray200:"#e2e8f0",gray400:"#94a3b8",gray500:"#64748b",
+    gray600:"#475569",gray700:"#334155",gray900:"#0f172a",white:"#ffffff",
   };
-
-  const apiFetch = async (path, method="GET", body=null, token=null) => {
-    const headers = {"Content-Type": "application/json"};
-    if (token) headers["Authorization"] = `Bearer ${token}`;
+  const apiFetch = async (path,method="GET",body=null,token=null) => {
+    const headers={"Content-Type":"application/json"};
+    if(token) headers["Authorization"]="Bearer "+token;
     try {
-      const res = await fetch(`${API_BASE}${path}`, {method, headers, body: body ? JSON.stringify(body) : null});
+      const res=await fetch(API_BASE+path,{method,headers,body:body?JSON.stringify(body):null});
       return await res.json();
-    } catch(e) { return {error: e.message}; }
+    } catch(e){return {error:e.message};}
   };
-
-  const Badge = ({status}) => {
-    const map = {
-      APPROVED: [C.successLight, C.success, "Approved"],
-      PENDING: [C.warningLight, C.warning, "Pending"],
-      NEXTSMS_PENDING: [C.purpleLight, C.purple, "NextSMS Pending"],
-      REJECTED: [C.dangerLight, C.danger, "Rejected"],
-      SENT: [C.successLight, C.success, "Sent"],
-      FAILED: [C.dangerLight, C.danger, "Failed"],
+  const Badge=({status})=>{
+    const map={
+      APPROVED:[C.successLight,C.success,"Approved"],PENDING:[C.warningLight,C.warning,"Pending"],
+      NEXTSMS_PENDING:[C.purpleLight,C.purple,"NextSMS Pending"],REJECTED:[C.dangerLight,C.danger,"Rejected"],
+      SENT:[C.successLight,C.success,"Sent"],FAILED:[C.dangerLight,C.danger,"Failed"],
     };
-    const [bg, color, label] = map[status] || [C.gray100, C.gray600, status];
-    return <span style={{background:bg, color, padding:"2px 10px", borderRadius:20, fontSize:12, fontWeight:600, whiteSpace:"nowrap"}}>{label}</span>;
+    const [bg,color,label]=map[status]||[C.gray100,C.gray600,status];
+    return React.createElement("span",{style:{background:bg,color,padding:"2px 10px",borderRadius:20,fontSize:12,fontWeight:600,whiteSpace:"nowrap"}},label);
   };
-
-  const Card = ({children, style={}}) => (
-    <div style={{background:C.white, borderRadius:14, border:`1px solid ${C.gray200}`, padding:20, ...style}}>{children}</div>
-  );
-
-  const Btn = ({children, onClick, variant="primary", size="md", disabled=false, full=false, style={}}) => {
-    const base = {borderRadius:8, fontWeight:600, border:"none", cursor:disabled?"not-allowed":"pointer", opacity:disabled?0.6:1, width:full?"100%":"auto", transition:"opacity 0.15s"};
-    const variants = {
-      primary: {background:C.grad, color:C.white},
-      secondary: {background:C.white, color:C.primary, border:`1.5px solid ${C.primaryLight}`},
-      success: {background:C.success, color:C.white},
-      danger: {background:C.danger, color:C.white},
-      warning: {background:C.warning, color:C.white},
-      ghost: {background:C.primaryXLight, color:C.primary, border:`1px solid ${C.primaryLight}`},
+  const Card=({children,style={}})=>React.createElement("div",{style:{background:C.white,borderRadius:14,border:"1px solid "+C.gray200,padding:20,...style}},children);
+  const Btn=({children,onClick,variant="primary",size="md",disabled=false,full=false,style={}})=>{
+    const base={borderRadius:8,fontWeight:600,border:"none",cursor:disabled?"not-allowed":"pointer",opacity:disabled?0.6:1,width:full?"100%":"auto"};
+    const variants={
+      primary:{background:C.grad,color:C.white},secondary:{background:C.white,color:C.primary,border:"1.5px solid "+C.primaryLight},
+      success:{background:C.success,color:C.white},danger:{background:C.danger,color:C.white},
+      warning:{background:C.warning,color:C.white},ghost:{background:C.primaryXLight,color:C.primary,border:"1px solid "+C.primaryLight},
     };
-    const sizes = {sm:{padding:"5px 12px",fontSize:12}, md:{padding:"9px 18px",fontSize:14}};
-    return <button onClick={onClick} disabled={disabled} style={{...base, ...variants[variant], ...sizes[size], ...style}}>{children}</button>;
+    const sizes={sm:{padding:"5px 12px",fontSize:12},md:{padding:"9px 18px",fontSize:14}};
+    return React.createElement("button",{onClick,disabled,style:{...base,...variants[variant],...sizes[size],...style}},children);
   };
-
-  const Field = ({label, value, onChange, type="text", placeholder="", rows}) => (
-    <div style={{marginBottom:14}}>
-      {label && <label style={{display:"block", fontSize:13, fontWeight:600, color:C.primary, marginBottom:5}}>{label}</label>}
-      {rows
-        ? <textarea value={value} onChange={e=>onChange(e.target.value)} placeholder={placeholder} rows={rows}
-            style={{width:"100%", padding:"9px 12px", border:`1.5px solid ${C.primaryLight}`, borderRadius:8, fontSize:14, outline:"none", color:C.gray900, background:C.primaryXLight}}/>
-        : <input type={type} value={value} onChange={e=>onChange(e.target.value)} placeholder={placeholder}
-            style={{width:"100%", padding:"9px 12px", border:`1.5px solid ${C.primaryLight}`, borderRadius:8, fontSize:14, outline:"none", color:C.gray900, background:C.primaryXLight}}/>
-      }
-    </div>
-  );
-
-  const StatCard = ({label, value, color, sub, icon}) => (
-    <div style={{background:C.grad, borderRadius:14, padding:20, color:C.white}}>
-      <div style={{display:"flex", justifyContent:"space-between", alignItems:"flex-start"}}>
-        <div>
-          <p style={{margin:0, fontSize:12, fontWeight:600, opacity:0.75, textTransform:"uppercase", letterSpacing:"0.05em"}}>{label}</p>
-          <p style={{margin:"6px 0 0", fontSize:30, fontWeight:800, color:C.white}}>{value ?? 0}</p>
-          {sub && <p style={{margin:"2px 0 0", fontSize:12, opacity:0.7}}>{sub}</p>}
-        </div>
-        {icon && <span style={{fontSize:28, opacity:0.6}}>{icon}</span>}
-      </div>
-    </div>
-  );
-
-  const Modal = ({title, children, onClose}) => (
-    <div style={{position:"fixed", inset:0, background:"rgba(15,23,42,0.6)", display:"flex", alignItems:"center", justifyContent:"center", zIndex:200, padding:20}}>
-      <Card style={{width:"100%", maxWidth:460, boxShadow:"0 20px 60px rgba(30,58,138,0.2)"}}>
-        <div style={{display:"flex", justifyContent:"space-between", alignItems:"center", marginBottom:20}}>
-          <h3 style={{margin:0, fontSize:16, fontWeight:700, color:C.primary}}>{title}</h3>
-          <button onClick={onClose} style={{background:"none", border:"none", fontSize:22, cursor:"pointer", color:C.gray400, lineHeight:1}}>×</button>
-        </div>
-        {children}
-      </Card>
-    </div>
-  );
-
-  const Login = ({onLogin}) => {
-    const [u,setU]=useState(""); const [p,setP]=useState("");
-    const [err,setErr]=useState(""); const [loading,setLoading]=useState(false);
-    const submit = async () => {
-      setLoading(true); setErr("");
-      const res = await apiFetch("/api/auth/login","POST",{username:u,password:p});
-      setLoading(false);
-      res.token ? onLogin(res) : setErr(res.error||"Invalid credentials");
-    };
-    return (
-      <div style={{minHeight:"100vh", background:C.grad, display:"flex", alignItems:"center", justifyContent:"center"}}>
-        <div style={{width:"100%", maxWidth:400, padding:16}}>
-          <div style={{textAlign:"center", marginBottom:28}}>
-            <div style={{width:64, height:64, background:"rgba(255,255,255,0.15)", borderRadius:18, margin:"0 auto 16px", display:"flex", alignItems:"center", justifyContent:"center", fontSize:30, backdropFilter:"blur(10px)"}}>✉</div>
-            <h1 style={{fontSize:28, fontWeight:800, color:C.white, letterSpacing:"-0.5px"}}>ProSMS</h1>
-            <p style={{color:"rgba(255,255,255,0.7)", fontSize:14, marginTop:4}}>ReimagineAfrica Bulk SMS Platform</p>
-          </div>
-          <Card style={{boxShadow:"0 24px 64px rgba(15,23,42,0.3)"}}>
-            {err && <div style={{background:C.dangerLight, color:C.danger, padding:"10px 14px", borderRadius:8, fontSize:13, marginBottom:16, fontWeight:500}}>{err}</div>}
-            <Field label="Username" value={u} onChange={setU} placeholder="Enter username"/>
-            <Field label="Password" value={p} onChange={setP} type="password" placeholder="Enter password"/>
-            <Btn onClick={submit} disabled={loading} full style={{marginTop:8, padding:"11px 18px", fontSize:15}}>
-              {loading ? "Signing in..." : "Sign in"}
-            </Btn>
-          </Card>
-        </div>
-      </div>
+  const Field=({label,value,onChange,type="text",placeholder="",rows})=>{
+    const inputStyle={width:"100%",padding:"9px 12px",border:"1.5px solid "+C.primaryLight,borderRadius:8,fontSize:14,outline:"none",color:C.gray900,background:C.primaryXLight};
+    return React.createElement("div",{style:{marginBottom:14}},
+      label&&React.createElement("label",{style:{display:"block",fontSize:13,fontWeight:600,color:C.primary,marginBottom:5}},label),
+      rows?React.createElement("textarea",{value,onChange:e=>onChange(e.target.value),placeholder,rows,style:inputStyle})
+          :React.createElement("input",{type,value,onChange:e=>onChange(e.target.value),placeholder,style:inputStyle})
     );
   };
-
-  const AdminView = ({token, notify}) => {
+  const StatCard=({label,value,sub,icon})=>React.createElement("div",{style:{background:C.grad,borderRadius:14,padding:20,color:C.white}},
+    React.createElement("div",{style:{display:"flex",justifyContent:"space-between",alignItems:"flex-start"}},
+      React.createElement("div",null,
+        React.createElement("p",{style:{margin:0,fontSize:12,fontWeight:600,opacity:0.75,textTransform:"uppercase",letterSpacing:"0.05em"}},label),
+        React.createElement("p",{style:{margin:"6px 0 0",fontSize:28,fontWeight:800,color:C.white}},value??0),
+        sub&&React.createElement("p",{style:{margin:"2px 0 0",fontSize:12,opacity:0.7}},sub)
+      ),
+      icon&&React.createElement("span",{style:{fontSize:26,opacity:0.6}},icon)
+    )
+  );
+  const Modal=({title,children,onClose})=>React.createElement("div",
+    {style:{position:"fixed",inset:0,background:"rgba(15,23,42,0.6)",display:"flex",alignItems:"center",justifyContent:"center",zIndex:200,padding:20}},
+    React.createElement(Card,{style:{width:"100%",maxWidth:460}},
+      React.createElement("div",{style:{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:20}},
+        React.createElement("h3",{style:{margin:0,fontSize:16,fontWeight:700,color:C.primary}},title),
+        React.createElement("button",{onClick:onClose,style:{background:"none",border:"none",fontSize:22,cursor:"pointer",color:C.gray400}},"x")
+      ),children
+    )
+  );
+  const Login=({onLogin})=>{
+    const [u,setU]=useState(""); const [p,setP]=useState("");
+    const [err,setErr]=useState(""); const [loading,setLoading]=useState(false);
+    const submit=async()=>{
+      setLoading(true); setErr("");
+      const res=await apiFetch("/api/auth/login","POST",{username:u,password:p});
+      setLoading(false);
+      res.token?onLogin(res):setErr(res.error||"Invalid credentials");
+    };
+    return React.createElement("div",{style:{minHeight:"100vh",background:C.grad,display:"flex",alignItems:"center",justifyContent:"center"}},
+      React.createElement("div",{style:{width:"100%",maxWidth:400,padding:16}},
+        React.createElement("div",{style:{textAlign:"center",marginBottom:28}},
+          React.createElement("div",{style:{width:64,height:64,background:"rgba(255,255,255,0.15)",borderRadius:18,margin:"0 auto 16px",display:"flex",alignItems:"center",justifyContent:"center",fontSize:30}},"✉"),
+          React.createElement("h1",{style:{fontSize:28,fontWeight:800,color:C.white}},"ProSMS"),
+          React.createElement("p",{style:{color:"rgba(255,255,255,0.7)",fontSize:14,marginTop:4}},"ReimagineAfrica Bulk SMS Platform")
+        ),
+        React.createElement(Card,null,
+          err&&React.createElement("div",{style:{background:C.dangerLight,color:C.danger,padding:"10px 14px",borderRadius:8,fontSize:13,marginBottom:16}},err),
+          React.createElement(Field,{label:"Username",value:u,onChange:setU,placeholder:"Enter username"}),
+          React.createElement(Field,{label:"Password",value:p,onChange:setP,type:"password",placeholder:"Enter password"}),
+          React.createElement(Btn,{onClick:submit,disabled:loading,full:true,style:{marginTop:8}},loading?"Signing in...":"Sign in")
+        )
+      )
+    );
+  };
+  const AdminDashboard=({token,notify})=>{
+    const [overview,setOverview]=useState(null);
+    const [businesses,setBusinesses]=useState([]);
+    const [topupBiz,setTopupBiz]=useState(null);
+    const [topupAmt,setTopupAmt]=useState("");
+    useEffect(()=>{
+      apiFetch("/api/dashboard/admin/overview","GET",null,token).then(d=>setOverview(d.error?null:d));
+      apiFetch("/api/dashboard/admin/businesses","GET",null,token).then(d=>setBusinesses(Array.isArray(d)?d:[]));
+    },[token]);
+    const topup=async()=>{
+      await apiFetch("/api/credits/topup","POST",{businessId:topupBiz,amount:parseInt(topupAmt)},token);
+      notify(topupAmt+" credits added","success"); setTopupBiz(null); setTopupAmt("");
+      apiFetch("/api/dashboard/admin/businesses","GET",null,token).then(d=>setBusinesses(Array.isArray(d)?d:[]));
+    };
+    const thStyle={textAlign:"left",padding:"10px 12px",fontSize:11,fontWeight:700,color:C.primary,textTransform:"uppercase"};
+    const tdStyle={padding:"12px",fontSize:13,color:C.gray900};
+    return React.createElement("div",null,
+      overview&&React.createElement("div",{style:{display:"grid",gridTemplateColumns:"repeat(4,1fr)",gap:14,marginBottom:20}},
+        React.createElement(StatCard,{label:"Total SMS sent",value:overview.totalSent,icon:"✉"}),
+        React.createElement(StatCard,{label:"Total failed",value:overview.totalFailed,icon:"❌"}),
+        React.createElement(StatCard,{label:"Businesses",value:overview.totalBusinesses,icon:"🏢"}),
+        React.createElement(StatCard,{label:"Delivery rate",value:overview.platformDeliveryRate,icon:"📊"})
+      ),
+      overview&&React.createElement("div",{style:{display:"grid",gridTemplateColumns:"repeat(2,1fr)",gap:14,marginBottom:20}},
+        React.createElement(Card,null,
+          React.createElement("p",{style:{margin:"0 0 8px",fontSize:12,fontWeight:700,color:C.gray500,textTransform:"uppercase"}},"Total credits issued"),
+          React.createElement("p",{style:{fontSize:32,fontWeight:800,color:C.primary}},overview.totalCreditsIssued),
+          React.createElement("p",{style:{fontSize:12,color:C.gray400,marginTop:4}},"Across all businesses")
+        ),
+        React.createElement(Card,null,
+          React.createElement("p",{style:{margin:"0 0 8px",fontSize:12,fontWeight:700,color:C.gray500,textTransform:"uppercase"}},"Total credits used"),
+          React.createElement("p",{style:{fontSize:32,fontWeight:800,color:C.success}},overview.totalCreditsUsed),
+          React.createElement("p",{style:{fontSize:12,color:C.gray400,marginTop:4}},"SMS credits consumed")
+        )
+      ),
+      React.createElement(Card,null,
+        React.createElement("div",{style:{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:16}},
+          React.createElement("h3",{style:{margin:0,fontSize:15,fontWeight:700,color:C.primary}},"All Businesses"),
+          React.createElement("span",{style:{fontSize:13,color:C.gray400}},businesses.length+" businesses")
+        ),
+        React.createElement("div",{style:{overflowX:"auto"}},
+          React.createElement("table",{style:{width:"100%",borderCollapse:"collapse",minWidth:800}},
+            React.createElement("thead",null,React.createElement("tr",{style:{background:C.primaryXLight}},
+              ["Business","Business ID","Credit Balance","Purchased","Used","SMS Sent","Failed","Delivery Rate","Actions"].map(h=>
+                React.createElement("th",{key:h,style:thStyle},h))
+            )),
+            React.createElement("tbody",null,
+              businesses.length===0
+                ?React.createElement("tr",null,React.createElement("td",{colSpan:9,style:{textAlign:"center",padding:40,color:C.gray400}},"No businesses yet"))
+                :businesses.map(b=>React.createElement("tr",{key:b.businessId,style:{borderBottom:"1px solid "+C.gray100}},
+                    React.createElement("td",{style:{...tdStyle,fontWeight:600}},b.businessName),
+                    React.createElement("td",{style:{...tdStyle,color:C.gray500}},b.businessId),
+                    React.createElement("td",{style:tdStyle},
+                      React.createElement("span",{style:{background:b.creditBalance>10?C.successLight:C.dangerLight,color:b.creditBalance>10?C.success:C.danger,padding:"3px 10px",borderRadius:20,fontSize:12,fontWeight:700}},b.creditBalance)
+                    ),
+                    React.createElement("td",{style:{...tdStyle,color:C.gray600}},b.totalPurchased),
+                    React.createElement("td",{style:{...tdStyle,color:C.gray600}},b.totalUsed),
+                    React.createElement("td",{style:{...tdStyle,color:C.success,fontWeight:600}},b.totalSent),
+                    React.createElement("td",{style:{...tdStyle,color:C.danger}},b.totalFailed),
+                    React.createElement("td",{style:tdStyle},
+                      React.createElement("span",{style:{background:C.primaryLight,color:C.primary,padding:"3px 10px",borderRadius:20,fontSize:12,fontWeight:600}},b.deliveryRate)
+                    ),
+                    React.createElement("td",{style:tdStyle},
+                      React.createElement(Btn,{size:"sm",variant:"ghost",onClick:()=>setTopupBiz(b.businessId)},"Top up")
+                    )
+                  ))
+            )
+          )
+        )
+      ),
+      topupBiz&&React.createElement(Modal,{title:"Top up credits",onClose:()=>setTopupBiz(null)},
+        React.createElement("p",{style:{fontSize:13,color:C.gray500,marginBottom:16}},"Business: ",React.createElement("strong",{style:{color:C.primary}},topupBiz)),
+        React.createElement(Field,{label:"Amount (credits)",value:topupAmt,onChange:setTopupAmt,type:"number",placeholder:"e.g. 500"}),
+        React.createElement("div",{style:{display:"flex",gap:8,justifyContent:"flex-end"}},
+          React.createElement(Btn,{variant:"secondary",onClick:()=>setTopupBiz(null)},"Cancel"),
+          React.createElement(Btn,{onClick:topup},"Add credits")
+        )
+      )
+    );
+  };
+  const AdminSenderIds=({token,notify})=>{
     const [tab,setTab]=useState("pending");
     const [pending,setPending]=useState([]);
     const [nsPending,setNsPending]=useState([]);
     const [all,setAll]=useState([]);
-    const [topupBiz,setTopupBiz]=useState(null);
-    const [topupAmt,setTopupAmt]=useState("");
     const [regModal,setRegModal]=useState(false);
     const [biz,setBiz]=useState({username:"",password:"",businessId:"",businessName:"",senderId:""});
-
-    const load = useCallback(async () => {
-      const [p,n,a] = await Promise.all([
+    const load=useCallback(async()=>{
+      const [p,n,a]=await Promise.all([
         apiFetch("/api/sender-id/pending","GET",null,token),
         apiFetch("/api/sender-id/nextsms-pending","GET",null,token),
         apiFetch("/api/sender-id/all","GET",null,token),
@@ -167,107 +204,125 @@
       setPending(Array.isArray(p)?p:[]); setNsPending(Array.isArray(n)?n:[]); setAll(Array.isArray(a)?a:[]);
     },[token]);
     useEffect(()=>{load();},[load]);
-
-    const submitNS = async id => { await apiFetch(`/api/sender-id/submit-nextsms/${id}`,"PUT",{note:"Submitted to NextSMS"},token); notify("Submitted to NextSMS","success"); load(); };
-    const approve = async id => { await apiFetch(`/api/sender-id/approve/${id}`,"PUT",{note:"Approved"},token); notify("Approved","success"); load(); };
-    const reject = async id => { await apiFetch(`/api/sender-id/reject/${id}`,"PUT",{note:"Rejected"},token); notify("Sender ID rejected","error"); load(); };
-    const topup = async () => { await apiFetch("/api/credits/topup","POST",{businessId:topupBiz,amount:parseInt(topupAmt)},token); notify(`${topupAmt} credits added`,"success"); setTopupBiz(null); setTopupAmt(""); };
-    const registerBiz = async () => {
+    const submitNS=async id=>{await apiFetch("/api/sender-id/submit-nextsms/"+id,"PUT",{note:"Submitted"},token);notify("Submitted to NextSMS","success");load();};
+    const approve=async id=>{await apiFetch("/api/sender-id/approve/"+id,"PUT",{note:"Approved"},token);notify("Approved","success");load();};
+    const reject=async id=>{await apiFetch("/api/sender-id/reject/"+id,"PUT",{note:"Rejected"},token);notify("Rejected","error");load();};
+    const registerBiz=async()=>{
       await apiFetch("/api/auth/register","POST",{...biz,role:"BUSINESS"});
       await apiFetch("/api/sender-id/register","POST",{businessId:biz.businessId,businessName:biz.businessName,senderId:biz.senderId},token);
-      notify("Business registered","success"); setRegModal(false); setBiz({username:"",password:"",businessId:"",businessName:"",senderId:""}); load();
+      notify("Business registered","success");setRegModal(false);setBiz({username:"",password:"",businessId:"",businessName:"",senderId:""});load();
     };
-
-    const tabs=[["pending",`Pending (${pending.length})`],["nextsms",`NextSMS (${nsPending.length})`],["all",`All (${all.length})`]];
-    const rows = tab==="pending"?pending:tab==="nextsms"?nsPending:all;
-
-    return (
-      <div>
-        <div style={{display:"grid", gridTemplateColumns:"repeat(3,1fr)", gap:14, marginBottom:20}}>
-          <StatCard label="Pending review" value={pending.length} icon="⏳"/>
-          <StatCard label="At NextSMS" value={nsPending.length} icon="📤"/>
-          <StatCard label="Total sender IDs" value={all.length} icon="🆔"/>
-        </div>
-        <Card>
-          <div style={{display:"flex", justifyContent:"space-between", alignItems:"center", marginBottom:16, flexWrap:"wrap", gap:10}}>
-            <div style={{display:"flex", gap:6, flexWrap:"wrap"}}>
-              {tabs.map(([k,l])=>(
-                <button key={k} onClick={()=>setTab(k)}
-                  style={{padding:"7px 16px", borderRadius:8, border:"none", cursor:"pointer", fontSize:13, fontWeight:600,
-                    background:tab===k?C.grad:"transparent",
-                    color:tab===k?C.white:C.primary,
-                    boxShadow:tab===k?"0 2px 8px rgba(37,99,235,0.3)":"none"}}>
-                  {l}
-                </button>
-              ))}
-            </div>
-            <Btn size="sm" onClick={()=>setRegModal(true)}>+ Register business</Btn>
-          </div>
-          <div style={{overflowX:"auto"}}>
-            <table style={{width:"100%", borderCollapse:"collapse", minWidth:700}}>
-              <thead>
-                <tr style={{background:C.primaryXLight}}>
-                  {["Business","Business ID","Sender ID","Status","Requested","Actions"].map(h=>(
-                    <th key={h} style={{textAlign:"left", padding:"10px 12px", fontSize:11, fontWeight:700, color:C.primary, textTransform:"uppercase", letterSpacing:"0.05em"}}>{h}</th>
-                  ))}
-                </tr>
-              </thead>
-              <tbody>
-                {rows.map(r=>(
-                  <tr key={r.id} style={{borderBottom:`1px solid ${C.gray100}`}}>
-                    <td style={{padding:"12px", fontSize:14, fontWeight:600, color:C.gray900}}>{r.businessName}</td>
-                    <td style={{padding:"12px", fontSize:13, color:C.gray500}}>{r.businessId}</td>
-                    <td style={{padding:"12px"}}>
-                      <span style={{background:C.grad, color:C.white, padding:"3px 12px", borderRadius:20, fontSize:12, fontWeight:700}}>{r.senderId}</span>
-                    </td>
-                    <td style={{padding:"12px"}}><Badge status={r.status}/></td>
-                    <td style={{padding:"12px", fontSize:12, color:C.gray400}}>{new Date(r.requestedAt).toLocaleDateString()}</td>
-                    <td style={{padding:"12px"}}>
-                      <div style={{display:"flex", gap:5, flexWrap:"wrap"}}>
-                        {r.status==="PENDING" && <Btn size="sm" variant="warning" onClick={()=>submitNS(r.id)}>To NextSMS</Btn>}
-                        {["PENDING","NEXTSMS_PENDING"].includes(r.status) && <Btn size="sm" variant="success" onClick={()=>approve(r.id)}>Approve</Btn>}
-                        {!["APPROVED","REJECTED"].includes(r.status) && <Btn size="sm" variant="danger" onClick={()=>reject(r.id)}>Reject</Btn>}
-                        <Btn size="sm" variant="ghost" onClick={()=>setTopupBiz(r.businessId)}>Top up</Btn>
-                      </div>
-                    </td>
-                  </tr>
-                ))}
-                {rows.length===0 && <tr><td colSpan={6} style={{textAlign:"center", padding:40, color:C.gray400, fontSize:14}}>No records found</td></tr>}
-              </tbody>
-            </table>
-          </div>
-        </Card>
-
-        {topupBiz && (
-          <Modal title="Top up credits" onClose={()=>setTopupBiz(null)}>
-            <p style={{fontSize:13, color:C.gray500, marginBottom:16}}>Business: <strong style={{color:C.primary}}>{topupBiz}</strong></p>
-            <Field label="Amount (credits)" value={topupAmt} onChange={setTopupAmt} type="number" placeholder="e.g. 500"/>
-            <div style={{display:"flex", gap:8, justifyContent:"flex-end"}}>
-              <Btn variant="secondary" onClick={()=>setTopupBiz(null)}>Cancel</Btn>
-              <Btn onClick={topup}>Add credits</Btn>
-            </div>
-          </Modal>
-        )}
-
-        {regModal && (
-          <Modal title="Register new business" onClose={()=>setRegModal(false)}>
-            <Field label="Login username" value={biz.username} onChange={v=>setBiz({...biz,username:v})} placeholder="e.g. koica_user"/>
-            <Field label="Password" value={biz.password} onChange={v=>setBiz({...biz,password:v})} type="password" placeholder="Strong password"/>
-            <Field label="Business ID" value={biz.businessId} onChange={v=>setBiz({...biz,businessId:v})} placeholder="e.g. koica-001"/>
-            <Field label="Business name" value={biz.businessName} onChange={v=>setBiz({...biz,businessName:v})} placeholder="e.g. KOICA Tanzania"/>
-            <Field label="Desired sender ID" value={biz.senderId} onChange={v=>setBiz({...biz,senderId:v})} placeholder="e.g. KOICA"/>
-            <div style={{display:"flex", gap:8, justifyContent:"flex-end"}}>
-              <Btn variant="secondary" onClick={()=>setRegModal(false)}>Cancel</Btn>
-              <Btn onClick={registerBiz}>Register</Btn>
-            </div>
-          </Modal>
-        )}
-      </div>
+    const tabs=[["pending","Pending ("+pending.length+")"],["nextsms","NextSMS ("+nsPending.length+")"],["all","All ("+all.length+")"]];
+    const rows=tab==="pending"?pending:tab==="nextsms"?nsPending:all;
+    const thStyle={textAlign:"left",padding:"10px 12px",fontSize:11,fontWeight:700,color:C.primary,textTransform:"uppercase"};
+    const tdStyle={padding:"12px",fontSize:13,color:C.gray900};
+    return React.createElement("div",null,
+      React.createElement(Card,null,
+        React.createElement("div",{style:{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:16,flexWrap:"wrap",gap:10}},
+          React.createElement("div",{style:{display:"flex",gap:6,flexWrap:"wrap"}},
+            tabs.map(([k,l])=>React.createElement("button",{key:k,onClick:()=>setTab(k),
+              style:{padding:"7px 16px",borderRadius:8,border:"none",cursor:"pointer",fontSize:13,fontWeight:600,
+                background:tab===k?C.grad:"transparent",color:tab===k?C.white:C.primary}},l))
+          ),
+          React.createElement(Btn,{size:"sm",onClick:()=>setRegModal(true)},"+ Register business")
+        ),
+        React.createElement("div",{style:{overflowX:"auto"}},
+          React.createElement("table",{style:{width:"100%",borderCollapse:"collapse",minWidth:700}},
+            React.createElement("thead",null,React.createElement("tr",{style:{background:C.primaryXLight}},
+              ["Business","Business ID","Sender ID","Status","Requested","Actions"].map(h=>React.createElement("th",{key:h,style:thStyle},h))
+            )),
+            React.createElement("tbody",null,
+              rows.length===0
+                ?React.createElement("tr",null,React.createElement("td",{colSpan:6,style:{textAlign:"center",padding:40,color:C.gray400}},"No records"))
+                :rows.map(r=>React.createElement("tr",{key:r.id,style:{borderBottom:"1px solid "+C.gray100}},
+                    React.createElement("td",{style:{...tdStyle,fontWeight:600}},r.businessName),
+                    React.createElement("td",{style:{...tdStyle,color:C.gray500}},r.businessId),
+                    React.createElement("td",{style:tdStyle},React.createElement("span",{style:{background:C.grad,color:C.white,padding:"3px 12px",borderRadius:20,fontSize:12,fontWeight:700}},r.senderId)),
+                    React.createElement("td",{style:tdStyle},React.createElement(Badge,{status:r.status})),
+                    React.createElement("td",{style:{...tdStyle,fontSize:12,color:C.gray400}},new Date(r.requestedAt).toLocaleDateString()),
+                    React.createElement("td",{style:tdStyle},
+                      React.createElement("div",{style:{display:"flex",gap:5,flexWrap:"wrap"}},
+                        r.status==="PENDING"&&React.createElement(Btn,{key:"ns",size:"sm",variant:"warning",onClick:()=>submitNS(r.id)},"To NextSMS"),
+                        ["PENDING","NEXTSMS_PENDING"].includes(r.status)&&React.createElement(Btn,{key:"ap",size:"sm",variant:"success",onClick:()=>approve(r.id)},"Approve"),
+                        !["APPROVED","REJECTED"].includes(r.status)&&React.createElement(Btn,{key:"rj",size:"sm",variant:"danger",onClick:()=>reject(r.id)},"Reject")
+                      )
+                    )
+                  ))
+            )
+          )
+        )
+      ),
+      regModal&&React.createElement(Modal,{title:"Register new business",onClose:()=>setRegModal(false)},
+        React.createElement(Field,{label:"Username",value:biz.username,onChange:v=>setBiz({...biz,username:v}),placeholder:"e.g. koica_user"}),
+        React.createElement(Field,{label:"Password",value:biz.password,onChange:v=>setBiz({...biz,password:v}),type:"password",placeholder:"Strong password"}),
+        React.createElement(Field,{label:"Business ID",value:biz.businessId,onChange:v=>setBiz({...biz,businessId:v}),placeholder:"e.g. koica-001"}),
+        React.createElement(Field,{label:"Business name",value:biz.businessName,onChange:v=>setBiz({...biz,businessName:v}),placeholder:"e.g. KOICA Tanzania"}),
+        React.createElement(Field,{label:"Desired sender ID",value:biz.senderId,onChange:v=>setBiz({...biz,senderId:v}),placeholder:"e.g. KOICA"}),
+        React.createElement("div",{style:{display:"flex",gap:8,justifyContent:"flex-end"}},
+          React.createElement(Btn,{variant:"secondary",onClick:()=>setRegModal(false)},"Cancel"),
+          React.createElement(Btn,{onClick:registerBiz},"Register")
+        )
+      )
     );
   };
-
-  const BusinessView = ({token, businessId, notify}) => {
-    const [tab,setTab]=useState("single");
+  const CampaignReports=({token,businessId})=>{
+    const [campaigns,setCampaigns]=useState([]);
+    const [loading,setLoading]=useState(true);
+    useEffect(()=>{
+      apiFetch("/api/dashboard/campaigns/"+businessId,"GET",null,token)
+        .then(d=>{setCampaigns(Array.isArray(d)?d:[]);setLoading(false);});
+    },[token,businessId]);
+    const thStyle={textAlign:"left",padding:"10px 12px",fontSize:11,fontWeight:700,color:C.primary,textTransform:"uppercase"};
+    const tdStyle={padding:"12px",fontSize:13,color:C.gray900};
+    const totalSent=campaigns.reduce((a,c)=>a+c.totalSent,0);
+    const totalFailed=campaigns.reduce((a,c)=>a+c.totalFailed,0);
+    const totalAll=campaigns.reduce((a,c)=>a+c.total,0);
+    return React.createElement("div",null,
+      React.createElement("div",{style:{display:"grid",gridTemplateColumns:"repeat(3,1fr)",gap:14,marginBottom:20}},
+        React.createElement(StatCard,{label:"Total campaigns",value:campaigns.length,icon:"📋"}),
+        React.createElement(StatCard,{label:"Total sent",value:totalSent,icon:"✅"}),
+        React.createElement(StatCard,{label:"Total failed",value:totalFailed,icon:"❌"})
+      ),
+      React.createElement(Card,null,
+        React.createElement("div",{style:{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:16}},
+          React.createElement("h3",{style:{margin:0,fontSize:15,fontWeight:700,color:C.primary}},"Campaign Reports"),
+          React.createElement("span",{style:{fontSize:13,color:C.gray400}},campaigns.length+" campaigns")
+        ),
+        loading
+          ?React.createElement("p",{style:{textAlign:"center",padding:40,color:C.gray400}},"Loading...")
+          :React.createElement("div",{style:{overflowX:"auto"}},
+            React.createElement("table",{style:{width:"100%",borderCollapse:"collapse",minWidth:600}},
+              React.createElement("thead",null,React.createElement("tr",{style:{background:C.primaryXLight}},
+                ["Campaign","Total","Sent","Failed","Delivery Rate","Last Sent"].map(h=>React.createElement("th",{key:h,style:thStyle},h))
+              )),
+              React.createElement("tbody",null,
+                campaigns.length===0
+                  ?React.createElement("tr",null,React.createElement("td",{colSpan:6,style:{textAlign:"center",padding:40,color:C.gray400}},"No campaigns yet"))
+                  :campaigns.map((c,i)=>React.createElement("tr",{key:i,style:{borderBottom:"1px solid "+C.gray100}},
+                      React.createElement("td",{style:{...tdStyle,fontWeight:600}},c.campaignName),
+                      React.createElement("td",{style:tdStyle},c.total),
+                      React.createElement("td",{style:{...tdStyle,color:C.success,fontWeight:600}},c.totalSent),
+                      React.createElement("td",{style:{...tdStyle,color:C.danger}},c.totalFailed),
+                      React.createElement("td",{style:tdStyle},
+                        React.createElement("div",{style:{display:"flex",alignItems:"center",gap:8}},
+                          React.createElement("div",{style:{flex:1,background:C.gray100,borderRadius:20,height:8,overflow:"hidden"}},
+                            React.createElement("div",{style:{height:8,borderRadius:20,background:C.grad,width:c.deliveryRate}})
+                          ),
+                          React.createElement("span",{style:{fontSize:12,fontWeight:700,color:C.primary,minWidth:40}},c.deliveryRate)
+                        )
+                      ),
+                      React.createElement("td",{style:{...tdStyle,fontSize:12,color:C.gray400}},
+                        c.lastSent!=="N/A"?new Date(c.lastSent).toLocaleDateString():"N/A"
+                      )
+                    ))
+              )
+            )
+          )
+      )
+    );
+  };
+  const BusinessView=({token,businessId,notify})=>{
+    const [tab,setTab]=useState("send");
     const [stats,setStats]=useState(null);
     const [senderIds,setSenderIds]=useState([]);
     const [history,setHistory]=useState([]);
@@ -277,226 +332,173 @@
     const [campaign,setCampaign]=useState("");
     const [csvFile,setCsvFile]=useState(null);
     const [sending,setSending]=useState(false);
-
-    const load = useCallback(async () => {
-      const [s,ids,h] = await Promise.all([
-        apiFetch(`/api/dashboard/${businessId}`,"GET",null,token),
-        apiFetch(`/api/sender-id/business/${businessId}`,"GET",null,token),
-        apiFetch(`/api/sms/history/${businessId}`,"GET",null,token),
+    const load=useCallback(async()=>{
+      const [s,ids,h]=await Promise.all([
+        apiFetch("/api/dashboard/"+businessId,"GET",null,token),
+        apiFetch("/api/sender-id/business/"+businessId,"GET",null,token),
+        apiFetch("/api/sms/history/"+businessId,"GET",null,token),
       ]);
       setStats(s.error?null:s); setSenderIds(Array.isArray(ids)?ids:[]); setHistory(Array.isArray(h)?h:[]);
     },[token,businessId]);
     useEffect(()=>{load();},[load]);
-
-    const approved = senderIds.find(s=>s.status==="APPROVED");
-    const pendingSender = senderIds.find(s=>["PENDING","NEXTSMS_PENDING"].includes(s.status));
-
-    const sendSingle = async () => {
+    const approved=senderIds.find(s=>s.status==="APPROVED");
+    const pendingSender=senderIds.find(s=>["PENDING","NEXTSMS_PENDING"].includes(s.status));
+    const sendSingle=async()=>{
       setSending(true);
-      const res = await apiFetch("/api/sms/send","POST",{businessId,phoneNumber:phone,message,campaignName:campaign||"Single SMS"},token);
+      const res=await apiFetch("/api/sms/send","POST",{businessId,phoneNumber:phone,message,campaignName:campaign||"Single SMS"},token);
       setSending(false);
       if(res.status==="SENT"){notify("SMS sent successfully","success");setPhone("");setMessage("");setCampaign("");load();}
-      else notify(res.error||"Failed to send","error");
+      else notify(res.error||"Failed","error");
     };
-    const sendBulk = async () => {
-      const phones = bulkPhones.split("\n").map(p=>p.trim()).filter(Boolean);
-      if(!phones.length) return notify("Enter at least one phone number","error");
+    const sendBulk=async()=>{
+      const phones=bulkPhones.split("\n").map(p=>p.trim()).filter(Boolean);
+      if(!phones.length) return notify("Enter phone numbers","error");
       setSending(true);
       await apiFetch("/api/sms/send-bulk","POST",{businessId,phoneNumbers:phones,message,campaignName:campaign||"Bulk SMS"},token);
-      setSending(false); notify(`Queued for ${phones.length} recipients`,"success");
+      setSending(false); notify("Queued for "+phones.length+" recipients","success");
       setBulkPhones(""); setMessage(""); setCampaign(""); load();
     };
-    const sendCsv = async () => {
-      if(!csvFile||!message) return notify("Select a CSV file and enter a message","error");
+    const sendCsv=async()=>{
+      if(!csvFile||!message) return notify("Select a file and enter a message","error");
       setSending(true);
-      const form = new FormData();
+      const form=new FormData();
       form.append("file",csvFile); form.append("businessId",businessId);
       form.append("message",message); form.append("campaignName",campaign||"CSV Campaign");
-      const res = await fetch(`${API_BASE}/api/sms/send-csv`,{method:"POST",headers:{Authorization:`Bearer ${token}`},body:form});
-      const data = await res.json(); setSending(false);
-      notify(data.message||"CSV processed","success"); setCsvFile(null); setMessage(""); setCampaign(""); load();
+      const res=await fetch(API_BASE+"/api/sms/send-csv",{method:"POST",headers:{Authorization:"Bearer "+token},body:form});
+      const data=await res.json(); setSending(false);
+      notify(data.message||"Sent","success"); setCsvFile(null); setMessage(""); setCampaign(""); load();
     };
-
-    const tabList=[["single","Single SMS"],["bulk","Bulk SMS"],["csv","CSV Upload"],["history","History"]];
-
-    return (
-      <div>
-        {stats && (
-          <div style={{display:"grid", gridTemplateColumns:"repeat(4,1fr)", gap:14, marginBottom:20}}>
-            <StatCard label="Credits" value={stats.creditBalance} icon="💳" sub={stats.creditBalance<=10?"Low balance":"Available"}/>
-            <StatCard label="Total sent" value={stats.totalSent} icon="✅"/>
-            <StatCard label="Failed" value={stats.totalFailed} icon="❌"/>
-            <StatCard label="Delivery rate" value={stats.deliveryRate} icon="📊"/>
-          </div>
-        )}
-
-        <div style={{display:"grid", gridTemplateColumns:"1fr 270px", gap:14, alignItems:"start"}}>
-          <Card>
-            <div style={{display:"flex", gap:6, marginBottom:20, flexWrap:"wrap", borderBottom:`2px solid ${C.primaryLight}`, paddingBottom:14}}>
-              {tabList.map(([k,l])=>(
-                <button key={k} onClick={()=>setTab(k)}
-                  style={{padding:"7px 16px", borderRadius:8, border:"none", cursor:"pointer", fontSize:13, fontWeight:600,
-                    background:tab===k?C.grad:"transparent",
-                    color:tab===k?C.white:C.primary,
-                    boxShadow:tab===k?"0 2px 8px rgba(37,99,235,0.3)":"none"}}>
-                  {l}
-                </button>
-              ))}
-            </div>
-
-            {tab==="single" && (
-              <div>
-                <Field label="Phone number" value={phone} onChange={setPhone} placeholder="255712345678"/>
-                <Field label="Message" value={message} onChange={setMessage} placeholder="Type your message here..." rows={4}/>
-                <p style={{fontSize:12, color:C.gray400, marginBottom:12}}>{message.length} characters · {Math.ceil(message.length/160)} SMS part{Math.ceil(message.length/160)!==1?"s":""}</p>
-                <Field label="Campaign name (optional)" value={campaign} onChange={setCampaign} placeholder="e.g. June Promotion"/>
-                <Btn onClick={sendSingle} disabled={sending||!phone||!message}>{sending?"Sending...":"Send SMS"}</Btn>
-              </div>
-            )}
-            {tab==="bulk" && (
-              <div>
-                <Field label="Phone numbers (one per line)" value={bulkPhones} onChange={setBulkPhones} placeholder={"255712345678\n255698765432\n255754321098"} rows={7}/>
-                <p style={{fontSize:12, color:C.primary, marginBottom:12, fontWeight:600}}>{bulkPhones.split("\n").filter(p=>p.trim()).length} recipients</p>
-                <Field label="Message" value={message} onChange={setMessage} placeholder="Type your message..." rows={3}/>
-                <Field label="Campaign name (optional)" value={campaign} onChange={setCampaign} placeholder="e.g. Bulk Promotion"/>
-                <Btn onClick={sendBulk} disabled={sending||!message}>{sending?"Sending...":"Send bulk SMS"}</Btn>
-              </div>
-            )}
-            {tab==="csv" && (
-              <div>
-                <div style={{marginBottom:14}}>
-                  <label style={{display:"block", fontSize:13, fontWeight:600, color:C.primary, marginBottom:5}}>CSV file</label>
-                  <div style={{background:C.primaryXLight, border:`2px dashed ${C.primaryLight}`, borderRadius:10, padding:20, textAlign:"center", marginBottom:8}}>
-                    <p style={{fontSize:13, color:C.gray500, marginBottom:10}}>First column = phone numbers. Include a header row.</p>
-                    <input type="file" accept=".csv" onChange={e=>setCsvFile(e.target.files[0])}
-                      style={{fontSize:13, color:C.primary}}/>
-                  </div>
-                  {csvFile && <p style={{fontSize:13, color:C.success, fontWeight:600}}>✓ {csvFile.name}</p>}
-                </div>
-                <Field label="Message" value={message} onChange={setMessage} placeholder="Type your message..." rows={3}/>
-                <Field label="Campaign name (optional)" value={campaign} onChange={setCampaign} placeholder="e.g. CSV Campaign"/>
-                <Btn onClick={sendCsv} disabled={sending||!csvFile||!message}>{sending?"Uploading...":"Upload and send"}</Btn>
-              </div>
-            )}
-            {tab==="history" && (
-              <div style={{overflowX:"auto"}}>
-                <table style={{width:"100%", borderCollapse:"collapse", minWidth:580}}>
-                  <thead>
-                    <tr style={{background:C.primaryXLight}}>
-                      {["Phone","Message","Sender","Campaign","Status","Sent at"].map(h=>(
-                        <th key={h} style={{textAlign:"left", padding:"10px 8px", fontSize:11, fontWeight:700, color:C.primary, textTransform:"uppercase"}}>{h}</th>
-                      ))}
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {history.slice(0,50).map(s=>(
-                      <tr key={s.id} style={{borderBottom:`1px solid ${C.gray100}`}}>
-                        <td style={{padding:"10px 8px", fontSize:13, color:C.gray900}}>{s.phoneNumber}</td>
-                        <td style={{padding:"10px 8px", fontSize:13, maxWidth:150, overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap", color:C.gray700}} title={s.message}>{s.message}</td>
-                        <td style={{padding:"10px 8px"}}>
-                          <span style={{background:C.grad, color:C.white, padding:"2px 8px", borderRadius:20, fontSize:11, fontWeight:700}}>{s.senderId}</span>
-                        </td>
-                        <td style={{padding:"10px 8px", fontSize:12, color:C.gray500}}>{s.campaignName}</td>
-                        <td style={{padding:"10px 8px"}}><Badge status={s.status}/></td>
-                        <td style={{padding:"10px 8px", fontSize:11, color:C.gray400, whiteSpace:"nowrap"}}>{new Date(s.sentAt).toLocaleString()}</td>
-                      </tr>
-                    ))}
-                    {history.length===0 && <tr><td colSpan={6} style={{textAlign:"center", padding:40, color:C.gray400, fontSize:14}}>No messages sent yet</td></tr>}
-                  </tbody>
-                </table>
-              </div>
-            )}
-          </Card>
-
-          <div style={{display:"flex", flexDirection:"column", gap:14}}>
-            <Card style={{background:C.grad, border:"none"}}>
-              <p style={{margin:"0 0 12px", fontSize:12, fontWeight:700, color:"rgba(255,255,255,0.7)", textTransform:"uppercase", letterSpacing:"0.08em"}}>Sender ID</p>
-              {approved ? (
-                <div style={{textAlign:"center", padding:"10px 0"}}>
-                  <div style={{fontSize:28, fontWeight:800, color:C.white, letterSpacing:"0.05em", marginBottom:10}}>{approved.senderId}</div>
-                  <span style={{background:"rgba(255,255,255,0.2)", color:C.white, padding:"3px 12px", borderRadius:20, fontSize:12, fontWeight:600}}>✓ Approved</span>
-                  <p style={{fontSize:12, color:"rgba(255,255,255,0.6)", marginTop:10}}>Recipients see this name</p>
-                </div>
-              ) : pendingSender ? (
-                <div style={{textAlign:"center", padding:"10px 0"}}>
-                  <div style={{fontSize:22, fontWeight:700, color:C.white, marginBottom:10}}>{pendingSender.senderId}</div>
-                  <Badge status={pendingSender.status}/>
-                  <p style={{fontSize:12, color:"rgba(255,255,255,0.6)", marginTop:10}}>Awaiting approval</p>
-                </div>
-              ) : (
-                <p style={{fontSize:13, color:"rgba(255,255,255,0.6)", textAlign:"center", padding:"10px 0"}}>No sender ID. Contact admin.</p>
-              )}
-            </Card>
-
-            <Card style={{background:C.grad, border:"none"}}>
-              <p style={{margin:"0 0 10px", fontSize:12, fontWeight:700, color:"rgba(255,255,255,0.7)", textTransform:"uppercase", letterSpacing:"0.08em"}}>Credits</p>
-              {stats ? (
-                <div>
-                  <div style={{fontSize:40, fontWeight:800, color:C.white, lineHeight:1}}>{stats.creditBalance}</div>
-                  <p style={{fontSize:13, color:"rgba(255,255,255,0.6)", margin:"4px 0 0"}}>Available credits</p>
-                  {stats.creditBalance<=10 && (
-                    <div style={{background:"rgba(220,38,38,0.3)", border:"1px solid rgba(220,38,38,0.5)", color:"#fca5a5", padding:"8px 12px", borderRadius:8, fontSize:12, marginTop:12, fontWeight:600}}>
-                      Low balance — contact admin
-                    </div>
-                  )}
-                </div>
-              ) : <p style={{color:"rgba(255,255,255,0.5)", fontSize:13}}>Loading...</p>}
-            </Card>
-          </div>
-        </div>
-      </div>
+    const navTabs=[["send","Send SMS"],["history","History"],["campaigns","Campaigns"]];
+    const thStyle={textAlign:"left",padding:"10px 8px",fontSize:11,fontWeight:700,color:C.primary,textTransform:"uppercase"};
+    const senderCard=React.createElement(Card,{style:{background:C.grad,border:"none"}},
+      React.createElement("p",{style:{margin:"0 0 12px",fontSize:12,fontWeight:700,color:"rgba(255,255,255,0.7)",textTransform:"uppercase"}},"Sender ID"),
+      approved
+        ?React.createElement("div",{style:{textAlign:"center",padding:"10px 0"}},
+            React.createElement("div",{style:{fontSize:28,fontWeight:800,color:C.white,marginBottom:10}},approved.senderId),
+            React.createElement("span",{style:{background:"rgba(255,255,255,0.2)",color:C.white,padding:"3px 12px",borderRadius:20,fontSize:12,fontWeight:600}},"Approved"),
+            React.createElement("p",{style:{fontSize:12,color:"rgba(255,255,255,0.6)",marginTop:10}},"Recipients see this name")
+          )
+        :pendingSender
+          ?React.createElement("div",{style:{textAlign:"center",padding:"10px 0"}},
+              React.createElement("div",{style:{fontSize:22,fontWeight:700,color:C.white,marginBottom:10}},pendingSender.senderId),
+              React.createElement(Badge,{status:pendingSender.status}),
+              React.createElement("p",{style:{fontSize:12,color:"rgba(255,255,255,0.6)",marginTop:10}},"Awaiting approval")
+            )
+          :React.createElement("p",{style:{fontSize:13,color:"rgba(255,255,255,0.6)",textAlign:"center"}},"No sender ID. Contact admin.")
+    );
+    const creditCard=React.createElement(Card,{style:{background:C.grad,border:"none"}},
+      React.createElement("p",{style:{margin:"0 0 10px",fontSize:12,fontWeight:700,color:"rgba(255,255,255,0.7)",textTransform:"uppercase"}},"Credits"),
+      stats
+        ?React.createElement("div",null,
+            React.createElement("div",{style:{fontSize:40,fontWeight:800,color:C.white,lineHeight:1}},stats.creditBalance),
+            React.createElement("p",{style:{fontSize:13,color:"rgba(255,255,255,0.6)",margin:"4px 0 0"}},"Available credits"),
+            stats.creditBalance<=10&&React.createElement("div",{style:{background:"rgba(220,38,38,0.3)",color:"#fca5a5",padding:"8px 12px",borderRadius:8,fontSize:12,marginTop:12,fontWeight:600}},"Low balance - contact admin")
+          )
+        :React.createElement("p",{style:{color:"rgba(255,255,255,0.5)",fontSize:13}},"Loading...")
+    );
+    return React.createElement("div",null,
+      stats&&React.createElement("div",{style:{display:"grid",gridTemplateColumns:"repeat(4,1fr)",gap:14,marginBottom:20}},
+        React.createElement(StatCard,{label:"Credits",value:stats.creditBalance,icon:"💳",sub:stats.creditBalance<=10?"Low balance":"Available"}),
+        React.createElement(StatCard,{label:"Total sent",value:stats.totalSent,icon:"✅"}),
+        React.createElement(StatCard,{label:"Failed",value:stats.totalFailed,icon:"❌"}),
+        React.createElement(StatCard,{label:"Delivery rate",value:stats.deliveryRate,icon:"📊"})
+      ),
+      React.createElement("div",{style:{display:"flex",gap:6,marginBottom:16,flexWrap:"wrap"}},
+        navTabs.map(([k,l])=>React.createElement("button",{key:k,onClick:()=>setTab(k),
+          style:{padding:"7px 16px",borderRadius:8,border:"none",cursor:"pointer",fontSize:13,fontWeight:600,
+            background:tab===k?C.grad:"transparent",color:tab===k?C.white:C.primary}},l))
+      ),
+      tab==="campaigns"
+        ?React.createElement(CampaignReports,{token,businessId})
+        :React.createElement("div",{style:{display:"grid",gridTemplateColumns:"1fr 270px",gap:14,alignItems:"start"}},
+          React.createElement(Card,null,
+            tab==="send"&&React.createElement("div",null,
+              React.createElement("div",{style:{display:"flex",gap:6,marginBottom:16,flexWrap:"wrap",borderBottom:"2px solid "+C.primaryLight,paddingBottom:12}},
+                [["single","Single SMS"],["bulk","Bulk SMS"],["csv","CSV Upload"]].map(([k,l])=>
+                  React.createElement("button",{key:k,onClick:()=>setPhone(k),
+                    style:{padding:"6px 14px",borderRadius:8,border:"none",cursor:"pointer",fontSize:12,fontWeight:600,
+                      background:phone===k||(!phone&&k==="single")?C.primaryLight:C.gray100,
+                      color:phone===k||(!phone&&k==="single")?C.primary:C.gray600}},l)
+                )
+              ),
+              (!phone||phone==="single")&&React.createElement("div",null,
+                React.createElement(Field,{label:"Phone number",value:phone==="single"?"":phone,onChange:setPhone,placeholder:"255712345678"}),
+                React.createElement(Field,{label:"Message",value:message,onChange:setMessage,placeholder:"Type your message...",rows:4}),
+                React.createElement("p",{style:{fontSize:12,color:C.gray400,marginBottom:12}},message.length+" characters"),
+                React.createElement(Field,{label:"Campaign name (optional)",value:campaign,onChange:setCampaign,placeholder:"e.g. June Promotion"}),
+                React.createElement(Btn,{onClick:sendSingle,disabled:sending||!message},sending?"Sending...":"Send SMS")
+              )
+            ),
+            tab==="history"&&React.createElement("div",{style:{overflowX:"auto"}},
+              React.createElement("table",{style:{width:"100%",borderCollapse:"collapse",minWidth:580}},
+                React.createElement("thead",null,React.createElement("tr",{style:{background:C.primaryXLight}},
+                  ["Phone","Message","Sender","Campaign","Status","Sent at"].map(h=>React.createElement("th",{key:h,style:thStyle},h))
+                )),
+                React.createElement("tbody",null,
+                  history.length===0
+                    ?React.createElement("tr",null,React.createElement("td",{colSpan:6,style:{textAlign:"center",padding:40,color:C.gray400}},"No messages yet"))
+                    :history.slice(0,100).map(s=>React.createElement("tr",{key:s.id,style:{borderBottom:"1px solid "+C.gray100}},
+                        React.createElement("td",{style:{padding:"10px 8px",fontSize:13}},s.phoneNumber),
+                        React.createElement("td",{style:{padding:"10px 8px",fontSize:13,maxWidth:150,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"},title:s.message},s.message),
+                        React.createElement("td",{style:{padding:"10px 8px"}},React.createElement("span",{style:{background:C.grad,color:C.white,padding:"2px 8px",borderRadius:20,fontSize:11,fontWeight:700}},s.senderId)),
+                        React.createElement("td",{style:{padding:"10px 8px",fontSize:12,color:C.gray500}},s.campaignName),
+                        React.createElement("td",{style:{padding:"10px 8px"}},React.createElement(Badge,{status:s.status})),
+                        React.createElement("td",{style:{padding:"10px 8px",fontSize:11,color:C.gray400,whiteSpace:"nowrap"}},new Date(s.sentAt).toLocaleString())
+                      ))
+                )
+              )
+            )
+          ),
+          React.createElement("div",{style:{display:"flex",flexDirection:"column",gap:14}},senderCard,creditCard)
+        )
     );
   };
-
-  const App = () => {
+  const Navbar=({auth,page,setPage,onLogout})=>{
+    const adminPages=page==="admin"?[["dashboard","Dashboard"],["senderids","Sender IDs"]]:[[];];
+    return React.createElement("div",{style:{background:C.grad,padding:"0 24px"}},
+      React.createElement("div",{style:{display:"flex",alignItems:"center",justifyContent:"space-between",height:60}},
+        React.createElement("div",{style:{display:"flex",alignItems:"center",gap:16}},
+          React.createElement("div",{style:{display:"flex",alignItems:"center",gap:10}},
+            React.createElement("div",{style:{width:36,height:36,background:"rgba(255,255,255,0.15)",borderRadius:10,display:"flex",alignItems:"center",justifyContent:"center",fontSize:18}},"✉"),
+            React.createElement("span",{style:{fontWeight:800,fontSize:18,color:C.white}},"ProSMS")
+          ),
+          auth.role==="ADMIN"&&React.createElement("div",{style:{display:"flex",gap:4}},
+            [["dashboard","Dashboard"],["senderids","Sender IDs"]].map(([k,l])=>
+              React.createElement("button",{key:k,onClick:()=>setPage(k),
+                style:{padding:"6px 14px",borderRadius:8,border:"none",cursor:"pointer",fontSize:13,fontWeight:600,
+                  background:page===k?"rgba(255,255,255,0.2)":"transparent",color:C.white}},l)
+            )
+          )
+        ),
+        React.createElement("div",{style:{display:"flex",alignItems:"center",gap:16}},
+          React.createElement("span",{style:{fontSize:13,color:"rgba(255,255,255,0.7)"}},auth.businessId),
+          React.createElement("span",{style:{background:"rgba(255,255,255,0.15)",color:C.white,padding:"2px 10px",borderRadius:20,fontSize:11,fontWeight:700}},auth.role),
+          React.createElement("button",{onClick:onLogout,style:{background:"rgba(255,255,255,0.15)",border:"none",color:C.white,padding:"6px 14px",borderRadius:8,fontSize:13,fontWeight:600,cursor:"pointer"}},"Sign out")
+        )
+      )
+    );
+  };
+  const App=()=>{
     const [auth,setAuth]=useState(null);
+    const [page,setPage]=useState("dashboard");
     const [toast,setToast]=useState(null);
-    const notify = (msg, type="error") => { setToast({msg,type}); setTimeout(()=>setToast(null),3500); };
-    if(!auth) return <Login onLogin={setAuth}/>;
-    return (
-      <div style={{minHeight:"100vh", background:C.primaryXLight}}>
-        {toast && (
-          <div style={{position:"fixed", top:16, right:16, zIndex:999,
-            background:toast.type==="success"?C.grad:"linear-gradient(to right,#991b1b,#dc2626)",
-            color:C.white, padding:"12px 20px", borderRadius:10, fontSize:14, fontWeight:600,
-            boxShadow:"0 8px 24px rgba(15,23,42,0.25)"}}>
-            {toast.msg}
-          </div>
-        )}
-
-        <div style={{background:C.grad, padding:"0 24px", boxShadow:"0 2px 12px rgba(15,23,42,0.2)"}}>
-          <div style={{display:"flex", alignItems:"center", justifyContent:"space-between", height:60}}>
-            <div style={{display:"flex", alignItems:"center", gap:12}}>
-              <div style={{width:36, height:36, background:"rgba(255,255,255,0.15)", borderRadius:10, display:"flex", alignItems:"center", justifyContent:"center", fontSize:18}}>✉</div>
-              <span style={{fontWeight:800, fontSize:18, color:C.white, letterSpacing:"-0.3px"}}>ProSMS</span>
-              <span style={{background:"rgba(255,255,255,0.15)", color:C.white, padding:"2px 10px", borderRadius:20, fontSize:11, fontWeight:700}}>
-                {auth.role}
-              </span>
-            </div>
-            <div style={{display:"flex", alignItems:"center", gap:16}}>
-              <span style={{fontSize:13, color:"rgba(255,255,255,0.7)"}}>{auth.businessId}</span>
-              <button onClick={()=>setAuth(null)}
-                style={{background:"rgba(255,255,255,0.15)", border:"none", color:C.white, padding:"6px 14px", borderRadius:8, fontSize:13, fontWeight:600, cursor:"pointer"}}>
-                Sign out
-              </button>
-            </div>
-          </div>
-        </div>
-
-        <div style={{padding:"24px"}}>
-          <h2 style={{margin:"0 0 20px", fontSize:20, fontWeight:700, color:C.primary}}>
-            {auth.role==="ADMIN" ? "Sender ID Management" : "Send SMS"}
-          </h2>
-          {auth.role==="ADMIN"
-            ? <AdminView token={auth.token} notify={notify}/>
-            : <BusinessView token={auth.token} businessId={auth.businessId} notify={notify}/>
-          }
-        </div>
-      </div>
+    const notify=(msg,type="error")=>{setToast({msg,type});setTimeout(()=>setToast(null),3500);};
+    if(!auth) return React.createElement(Login,{onLogin:a=>{setAuth(a);setPage(a.role==="ADMIN"?"dashboard":"sms");}});
+    const pageTitle={dashboard:"Platform Dashboard",senderids:"Sender ID Management",sms:"Send SMS"}[page]||"";
+    return React.createElement("div",{style:{minHeight:"100vh",background:C.primaryXLight}},
+      toast&&React.createElement("div",{style:{position:"fixed",top:16,right:16,zIndex:999,
+        background:toast.type==="success"?C.grad:"linear-gradient(to right,#991b1b,#dc2626)",
+        color:C.white,padding:"12px 20px",borderRadius:10,fontSize:14,fontWeight:600,boxShadow:"0 8px 24px rgba(15,23,42,0.25)"}},toast.msg),
+      React.createElement(Navbar,{auth,page,setPage,onLogout:()=>setAuth(null)}),
+      React.createElement("div",{style:{padding:"24px"}},
+        React.createElement("h2",{style:{margin:"0 0 20px",fontSize:20,fontWeight:700,color:C.primary}},pageTitle),
+        page==="dashboard"&&React.createElement(AdminDashboard,{token:auth.token,notify}),
+        page==="senderids"&&React.createElement(AdminSenderIds,{token:auth.token,notify}),
+        page==="sms"&&React.createElement(BusinessView,{token:auth.token,businessId:auth.businessId,notify})
+      )
     );
   };
-
-  ReactDOM.createRoot(document.getElementById("root")).render(<App/>);
+  ReactDOM.createRoot(document.getElementById("root")).render(React.createElement(App));
   </script>
 </body>
 </html>
