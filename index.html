@@ -14,12 +14,12 @@
 </head>
 <body>
   <div id="root"></div>
-  <script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
-  <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
-  <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
-  <script type="text/babel" data-presets="react">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/react/18.2.0/umd/react.production.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.2.0/umd/react-dom.production.min.js"></script>
+  <script type="text/javascript">
+  document.addEventListener("DOMContentLoaded", function() {
   const { useState, useEffect, useCallback } = React;
-  const API_BASE = "https://api.prosms.reimagineafrica.co.tz";
+  const API_BASE = "https://api-prosms.reimagineafrica.co.tz";
   const C = {
     grad:"linear-gradient(to right, #1e3a8a, #2563eb)",
     primary:"#1e40af",primaryLight:"#dbeafe",primaryXLight:"#eff6ff",
@@ -194,6 +194,9 @@
     const [nsPending,setNsPending]=useState([]);
     const [all,setAll]=useState([]);
     const [regModal,setRegModal]=useState(false);
+    const [editModal,setEditModal]=useState(false);
+    const [editRow,setEditRow]=useState(null);
+    const [editData,setEditData]=useState({senderId:"",businessName:"",status:"",adminNote:""});
     const [biz,setBiz]=useState({username:"",password:"",businessId:"",businessName:"",senderId:""});
     const load=useCallback(async()=>{
       const [p,n,a]=await Promise.all([
@@ -207,6 +210,16 @@
     const submitNS=async id=>{await apiFetch("/api/sender-id/submit-nextsms/"+id,"PUT",{note:"Submitted"},token);notify("Submitted to NextSMS","success");load();};
     const approve=async id=>{await apiFetch("/api/sender-id/approve/"+id,"PUT",{note:"Approved"},token);notify("Approved","success");load();};
     const reject=async id=>{await apiFetch("/api/sender-id/reject/"+id,"PUT",{note:"Rejected"},token);notify("Rejected","error");load();};
+    const openEdit=r=>{setEditRow(r);setEditData({senderId:r.senderId,businessName:r.businessName,status:r.status,adminNote:r.adminNote||""});setEditModal(true);};
+    const saveEdit=async()=>{
+      await apiFetch("/api/sender-id/update/"+editRow.id,"PUT",editData,token);
+      notify("Sender ID updated","success");setEditModal(false);setEditRow(null);load();
+    };
+    const deleteSenderId=async r=>{
+      if(!window.confirm("Delete sender ID '"+r.senderId+"' for "+r.businessName+"? This cannot be undone."))return;
+      await apiFetch("/api/sender-id/"+r.id,"DELETE",null,token);
+      notify("Sender ID deleted","success");load();
+    };
     const registerBiz=async()=>{
       await apiFetch("/api/auth/register","POST",{...biz,role:"BUSINESS"});
       await apiFetch("/api/sender-id/register","POST",{businessId:biz.businessId,businessName:biz.businessName,senderId:biz.senderId},token);
@@ -216,6 +229,7 @@
     const rows=tab==="pending"?pending:tab==="nextsms"?nsPending:all;
     const thStyle={textAlign:"left",padding:"10px 12px",fontSize:11,fontWeight:700,color:C.primary,textTransform:"uppercase"};
     const tdStyle={padding:"12px",fontSize:13,color:C.gray900};
+    const statusOptions=["PENDING","NEXTSMS_PENDING","APPROVED","REJECTED"];
     return React.createElement("div",null,
       React.createElement(Card,null,
         React.createElement("div",{style:{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:16,flexWrap:"wrap",gap:10}},
@@ -244,12 +258,30 @@
                       React.createElement("div",{style:{display:"flex",gap:5,flexWrap:"wrap"}},
                         r.status==="PENDING"&&React.createElement(Btn,{key:"ns",size:"sm",variant:"warning",onClick:()=>submitNS(r.id)},"To NextSMS"),
                         ["PENDING","NEXTSMS_PENDING"].includes(r.status)&&React.createElement(Btn,{key:"ap",size:"sm",variant:"success",onClick:()=>approve(r.id)},"Approve"),
-                        !["APPROVED","REJECTED"].includes(r.status)&&React.createElement(Btn,{key:"rj",size:"sm",variant:"danger",onClick:()=>reject(r.id)},"Reject")
+                        !["APPROVED","REJECTED"].includes(r.status)&&React.createElement(Btn,{key:"rj",size:"sm",variant:"danger",onClick:()=>reject(r.id)},"Reject"),
+                        React.createElement(Btn,{key:"ed",size:"sm",variant:"secondary",onClick:()=>openEdit(r)},"✏️ Edit"),
+                        React.createElement(Btn,{key:"dl",size:"sm",variant:"danger",onClick:()=>deleteSenderId(r)},"🗑️ Delete")
                       )
                     )
                   ))
             )
           )
+        )
+      ),
+      editModal&&editRow&&React.createElement(Modal,{title:"Edit Sender ID — "+editRow.businessName,onClose:()=>setEditModal(false)},
+        React.createElement(Field,{label:"Sender ID",value:editData.senderId,onChange:v=>setEditData({...editData,senderId:v}),placeholder:"e.g. KOICA"}),
+        React.createElement(Field,{label:"Business Name",value:editData.businessName,onChange:v=>setEditData({...editData,businessName:v}),placeholder:"e.g. KOICA Tanzania"}),
+        React.createElement("div",{style:{marginBottom:14}},
+          React.createElement("label",{style:{display:"block",fontSize:12,fontWeight:600,marginBottom:6,color:C.gray700}},"Status"),
+          React.createElement("select",{value:editData.status,onChange:e=>setEditData({...editData,status:e.target.value}),
+            style:{width:"100%",padding:"10px 12px",borderRadius:8,border:"1px solid "+C.gray200,fontSize:14,background:C.white}},
+            statusOptions.map(s=>React.createElement("option",{key:s,value:s},s))
+          )
+        ),
+        React.createElement(Field,{label:"Admin Note",value:editData.adminNote,onChange:v=>setEditData({...editData,adminNote:v}),placeholder:"Optional note"}),
+        React.createElement("div",{style:{display:"flex",gap:8,justifyContent:"flex-end"}},
+          React.createElement(Btn,{variant:"secondary",onClick:()=>setEditModal(false)},"Cancel"),
+          React.createElement(Btn,{onClick:saveEdit},"Save Changes")
         )
       ),
       regModal&&React.createElement(Modal,{title:"Register new business",onClose:()=>setRegModal(false)},
@@ -326,12 +358,13 @@
     const [stats,setStats]=useState(null);
     const [senderIds,setSenderIds]=useState([]);
     const [history,setHistory]=useState([]);
-    const [phone,setPhone]=useState("");
+    const [phone,setPhone]=useState(""); const [sendMode,setSendMode]=useState("single");
     const [bulkPhones,setBulkPhones]=useState("");
     const [message,setMessage]=useState("");
     const [campaign,setCampaign]=useState("");
     const [csvFile,setCsvFile]=useState(null);
     const [sending,setSending]=useState(false);
+    const [selectedSenderId,setSelectedSenderId]=useState("");
     const load=useCallback(async()=>{
       const [s,ids,h]=await Promise.all([
         apiFetch("/api/dashboard/"+businessId,"GET",null,token),
@@ -341,11 +374,17 @@
       setStats(s.error?null:s); setSenderIds(Array.isArray(ids)?ids:[]); setHistory(Array.isArray(h)?h:[]);
     },[token,businessId]);
     useEffect(()=>{load();},[load]);
-    const approved=senderIds.find(s=>s.status==="APPROVED");
+    const approvedList=senderIds.filter(s=>s.status==="APPROVED");
+    const approved=approvedList[0];
     const pendingSender=senderIds.find(s=>["PENDING","NEXTSMS_PENDING"].includes(s.status));
+    useEffect(()=>{
+      if(approvedList.length&&!approvedList.find(s=>s.senderId===selectedSenderId)){
+        setSelectedSenderId(approvedList[0].senderId);
+      }
+    },[senderIds]);
     const sendSingle=async()=>{
       setSending(true);
-      const res=await apiFetch("/api/sms/send","POST",{businessId,phoneNumber:phone,message,campaignName:campaign||"Single SMS"},token);
+      const res=await apiFetch("/api/sms/send","POST",{businessId,phoneNumber:phone,message,campaignName:campaign||"Single SMS",senderId:selectedSenderId},token);
       setSending(false);
       if(res.status==="SENT"){notify("SMS sent successfully","success");setPhone("");setMessage("");setCampaign("");load();}
       else notify(res.error||"Failed","error");
@@ -354,25 +393,64 @@
       const phones=bulkPhones.split("\n").map(p=>p.trim()).filter(Boolean);
       if(!phones.length) return notify("Enter phone numbers","error");
       setSending(true);
-      await apiFetch("/api/sms/send-bulk","POST",{businessId,phoneNumbers:phones,message,campaignName:campaign||"Bulk SMS"},token);
+      await apiFetch("/api/sms/send-bulk","POST",{businessId,phoneNumbers:phones,message,campaignName:campaign||"Bulk SMS",senderId:selectedSenderId},token);
       setSending(false); notify("Queued for "+phones.length+" recipients","success");
       setBulkPhones(""); setMessage(""); setCampaign(""); load();
     };
+    const validateCsv=async(file)=>{
+      const text=await file.text();
+      const lines=text.split(/\r?\n/).map(l=>l.trim()).filter(Boolean);
+      const errors=[];
+      const phoneRe=/^\+?[0-9]{7,15}$/;
+      const sciRe=/^[0-9.]+[eE][+-]?[0-9]+$/;
+      lines.forEach((line,i)=>{
+        if(i===0) return; // skip header
+        let raw=(line.split(",")[0]||"").trim();
+        if(!raw) return;
+        // Strip Excel formula wrapper: ="+255712345678" -> +255712345678
+        const formulaMatch=raw.match(/^="?(.*?)"?$/);
+        if(formulaMatch) raw=formulaMatch[1];
+        if(sciRe.test(raw)){
+          errors.push("Row "+(i+1)+": '"+raw+"' looks like Excel scientific notation. Format the phone column as TEXT in Excel (or prefix with ').");
+        } else if(!phoneRe.test(raw.replace(/[\s\-()]/g,""))){
+          errors.push("Row "+(i+1)+": '"+raw+"' is not a valid phone number.");
+        }
+      });
+      return errors;
+    };
     const sendCsv=async()=>{
       if(!csvFile||!message) return notify("Select a file and enter a message","error");
+      const errors=await validateCsv(csvFile);
+      if(errors.length){
+        notify(errors.length+" invalid number(s) found:\n"+errors.slice(0,5).join("\n")+(errors.length>5?"\n...and "+(errors.length-5)+" more.":""),"error");
+        return;
+      }
       setSending(true);
       const form=new FormData();
       form.append("file",csvFile); form.append("businessId",businessId);
-      form.append("message",message); form.append("campaignName",campaign||"CSV Campaign");
+      form.append("message",message); form.append("campaignName",campaign||"CSV Campaign"); form.append("senderId",selectedSenderId);
       const res=await fetch(API_BASE+"/api/sms/send-csv",{method:"POST",headers:{Authorization:"Bearer "+token},body:form});
       const data=await res.json(); setSending(false);
+      if(data.error){notify(data.error,"error");return;}
       notify(data.message||"Sent","success"); setCsvFile(null); setMessage(""); setCampaign(""); load();
     };
     const navTabs=[["send","Send SMS"],["history","History"],["campaigns","Campaigns"]];
     const thStyle={textAlign:"left",padding:"10px 8px",fontSize:11,fontWeight:700,color:C.primary,textTransform:"uppercase"};
     const senderCard=React.createElement(Card,{style:{background:C.grad,border:"none"}},
       React.createElement("p",{style:{margin:"0 0 12px",fontSize:12,fontWeight:700,color:"rgba(255,255,255,0.7)",textTransform:"uppercase"}},"Sender ID"),
-      approved
+      approvedList.length>1
+        ?React.createElement("div",{style:{padding:"4px 0"}},
+            React.createElement("select",{
+              value:selectedSenderId,
+              onChange:e=>setSelectedSenderId(e.target.value),
+              style:{width:"100%",padding:"10px 12px",borderRadius:8,border:"1px solid rgba(255,255,255,0.3)",background:"rgba(255,255,255,0.15)",color:C.white,fontSize:16,fontWeight:700,marginBottom:8,outline:"none"}
+            },
+              approvedList.map(s=>React.createElement("option",{key:s.senderId,value:s.senderId,style:{color:C.gray900}},s.senderId))
+            ),
+            React.createElement("span",{style:{background:"rgba(255,255,255,0.2)",color:C.white,padding:"3px 12px",borderRadius:20,fontSize:12,fontWeight:600}},approvedList.length+" approved IDs"),
+            React.createElement("p",{style:{fontSize:12,color:"rgba(255,255,255,0.6)",marginTop:10}},"Choose which name recipients see")
+          )
+        :approved
         ?React.createElement("div",{style:{textAlign:"center",padding:"10px 0"}},
             React.createElement("div",{style:{fontSize:28,fontWeight:800,color:C.white,marginBottom:10}},approved.senderId),
             React.createElement("span",{style:{background:"rgba(255,255,255,0.2)",color:C.white,padding:"3px 12px",borderRadius:20,fontSize:12,fontWeight:600}},"Approved"),
@@ -415,18 +493,42 @@
             tab==="send"&&React.createElement("div",null,
               React.createElement("div",{style:{display:"flex",gap:6,marginBottom:16,flexWrap:"wrap",borderBottom:"2px solid "+C.primaryLight,paddingBottom:12}},
                 [["single","Single SMS"],["bulk","Bulk SMS"],["csv","CSV Upload"]].map(([k,l])=>
-                  React.createElement("button",{key:k,onClick:()=>setPhone(k),
+                  React.createElement("button",{key:k,onClick:()=>setSendMode(k),
                     style:{padding:"6px 14px",borderRadius:8,border:"none",cursor:"pointer",fontSize:12,fontWeight:600,
-                      background:phone===k||(!phone&&k==="single")?C.primaryLight:C.gray100,
-                      color:phone===k||(!phone&&k==="single")?C.primary:C.gray600}},l)
+                      background:sendMode===k?C.primaryLight:C.gray100,
+                      color:sendMode===k?C.primary:C.gray600}},l)
                 )
               ),
-              (!phone||phone==="single")&&React.createElement("div",null,
-                React.createElement(Field,{label:"Phone number",value:phone==="single"?"":phone,onChange:setPhone,placeholder:"255712345678"}),
+              sendMode==="single"&&React.createElement("div",null,
+                React.createElement(Field,{label:"Phone number",value:phone,onChange:setPhone,placeholder:"255712345678"}),
                 React.createElement(Field,{label:"Message",value:message,onChange:setMessage,placeholder:"Type your message...",rows:4}),
                 React.createElement("p",{style:{fontSize:12,color:C.gray400,marginBottom:12}},message.length+" characters"),
                 React.createElement(Field,{label:"Campaign name (optional)",value:campaign,onChange:setCampaign,placeholder:"e.g. June Promotion"}),
                 React.createElement(Btn,{onClick:sendSingle,disabled:sending||!message},sending?"Sending...":"Send SMS")
+              ),
+              sendMode==="bulk"&&React.createElement("div",null,
+                React.createElement(Field,{label:"Phone numbers (one per line)",value:bulkPhones,onChange:setBulkPhones,placeholder:"255712345678\n255713456789\n255714567890",rows:6}),
+                React.createElement(Field,{label:"Message",value:message,onChange:setMessage,placeholder:"Type your message...",rows:4}),
+                React.createElement("p",{style:{fontSize:12,color:C.gray400,marginBottom:12}},message.length+" characters"),
+                React.createElement(Field,{label:"Campaign name (optional)",value:campaign,onChange:setCampaign,placeholder:"e.g. June Promotion"}),
+                React.createElement(Btn,{onClick:sendBulk,disabled:sending||!message||!bulkPhones},sending?"Sending...":"Send Bulk SMS")
+              ),
+              sendMode==="csv"&&React.createElement("div",null,
+                React.createElement("div",{style:{marginBottom:14}},
+                  React.createElement("label",{style:{display:"block",fontSize:13,fontWeight:600,color:C.primary,marginBottom:5}},"CSV file (with phone numbers)"),
+                  React.createElement("input",{type:"file",accept:".csv",onChange:e=>setCsvFile(e.target.files[0]),
+                    style:{width:"100%",padding:"9px 12px",border:"1.5px solid "+C.primaryLight,borderRadius:8,fontSize:14,background:C.primaryXLight}}),
+                  React.createElement("a",{
+                    href:"data:text/csv;charset=utf-8,"+encodeURIComponent('phone\n="+255712345678"\n="+255713456789"\n="+255714567890"\n'),
+                    download:"sample_phone_numbers.csv",
+                    style:{display:"inline-block",marginTop:8,fontSize:12,color:C.primary,fontWeight:600,textDecoration:"underline"}
+                  },"Download sample CSV format")
+                ),
+                csvFile&&React.createElement("p",{style:{fontSize:12,color:C.gray500,marginBottom:12}},"Selected: "+csvFile.name),
+                React.createElement(Field,{label:"Message",value:message,onChange:setMessage,placeholder:"Type your message...",rows:4}),
+                React.createElement("p",{style:{fontSize:12,color:C.gray400,marginBottom:12}},message.length+" characters"),
+                React.createElement(Field,{label:"Campaign name (optional)",value:campaign,onChange:setCampaign,placeholder:"e.g. June Promotion"}),
+                React.createElement(Btn,{onClick:sendCsv,disabled:sending||!message||!csvFile},sending?"Sending...":"Upload & Send")
               )
             ),
             tab==="history"&&React.createElement("div",{style:{overflowX:"auto"}},
@@ -454,7 +556,7 @@
     );
   };
   const Navbar=({auth,page,setPage,onLogout})=>{
-    const adminPages=page==="admin"?[["dashboard","Dashboard"],["senderids","Sender IDs"]]:[[];];
+    const adminPages=page==="admin"?[["dashboard","Dashboard"],["senderids","Sender IDs"]]:[];
     return React.createElement("div",{style:{background:C.grad,padding:"0 24px"}},
       React.createElement("div",{style:{display:"flex",alignItems:"center",justifyContent:"space-between",height:60}},
         React.createElement("div",{style:{display:"flex",alignItems:"center",gap:16}},
@@ -488,7 +590,7 @@
     return React.createElement("div",{style:{minHeight:"100vh",background:C.primaryXLight}},
       toast&&React.createElement("div",{style:{position:"fixed",top:16,right:16,zIndex:999,
         background:toast.type==="success"?C.grad:"linear-gradient(to right,#991b1b,#dc2626)",
-        color:C.white,padding:"12px 20px",borderRadius:10,fontSize:14,fontWeight:600,boxShadow:"0 8px 24px rgba(15,23,42,0.25)"}},toast.msg),
+        color:C.white,padding:"12px 20px",borderRadius:10,fontSize:14,fontWeight:600,boxShadow:"0 8px 24px rgba(15,23,42,0.25)",whiteSpace:"pre-line",maxWidth:400}},toast.msg),
       React.createElement(Navbar,{auth,page,setPage,onLogout:()=>setAuth(null)}),
       React.createElement("div",{style:{padding:"24px"}},
         React.createElement("h2",{style:{margin:"0 0 20px",fontSize:20,fontWeight:700,color:C.primary}},pageTitle),
@@ -499,6 +601,7 @@
     );
   };
   ReactDOM.createRoot(document.getElementById("root")).render(React.createElement(App));
+  });
   </script>
 </body>
 </html>
